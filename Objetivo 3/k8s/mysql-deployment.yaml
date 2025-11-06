@@ -1,0 +1,50 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: bookstore-db
+  namespace: bookstore
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: bookstore-db
+  template:
+    metadata:
+      labels:
+        app: bookstore-db
+    spec:
+      containers:
+        - name: mysql
+          image: mysql:8
+          env:
+            - name: MYSQL_DATABASE
+              value: bookstore
+            - name: MYSQL_USER
+              value: bookstore_user
+            - name: MYSQL_PASSWORD
+              value: bookstore_pass
+            - name: MYSQL_ROOT_PASSWORD
+              value: root_pass
+          ports:
+            - containerPort: 3306
+          volumeMounts:
+            - name: mysql-storage
+              mountPath: /var/lib/mysql
+      volumes:
+        - name: mysql-storage
+          persistentVolumeClaim:
+            claimName: pvc-mysql
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: bookstore-db
+  namespace: bookstore
+spec:
+  selector:
+    app: bookstore-db
+  ports:
+    - protocol: TCP
+      port: 3306
+      targetPort: 3306
+  type: ClusterIP

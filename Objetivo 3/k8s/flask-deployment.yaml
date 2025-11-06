@@ -1,0 +1,45 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: bookstore-app
+  namespace: bookstore
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: bookstore-app
+  template:
+    metadata:
+      labels:
+        app: bookstore-app
+    spec:
+      containers:
+        - name: flaskapp
+          image: 381491948161.dkr.ecr.us-east-1.amazonaws.com/bookstore:v1  # asegúrate de construirla o subirla a Docker Hub
+          env:
+            - name: FLASK_ENV
+              value: development
+            - name: DB_HOST
+              value: bookstore-db
+            - name: DB_USER
+              value: bookstore_user
+            - name: DB_PASS
+              value: bookstore_pass
+            - name: DB_NAME
+              value: bookstore
+          ports:
+            - containerPort: 5000
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: bookstore-service
+  namespace: bookstore
+spec:
+  selector:
+    app: bookstore-app
+  ports:
+    - protocol: TCP
+      port: 5000
+      targetPort: 5000
+  type: NodePort
